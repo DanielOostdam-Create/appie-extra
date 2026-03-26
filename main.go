@@ -66,6 +66,9 @@ Commands:
   koopzegels                     Show koopzegels (stamp) balance and savings
   brabantia                      Show Brabantia spaaractie status and balance
   delivery-slots                 Show available delivery time slots
+  basket                         Show current winkelmandje contents
+  basket-add <product-id> [qty]  Add product to winkelmandje
+  basket-remove <product-id>     Remove product from winkelmandje
 
 Config: uses same tokens as appie CLI (~/.config/appie/config.json)
 `)
@@ -470,6 +473,80 @@ func cmdDeliverySlots(ctx context.Context) {
 	printJSON(result)
 }
 
+func cmdBasket(ctx context.Context) {
+	client := mustAuth(ctx)
+
+	query := `{ basket { canChangeDelivery itemsInOrder { product { id title salesUnitSize } quantity } itemsInList { product { id title salesUnitSize } quantity } } }`
+
+	var result json.RawMessage
+	if err := doGraphQL(ctx, client, query, &result); err != nil {
+		fatal("Basket query failed: %v", err)
+	}
+
+	printJSON(result)
+}
+
+func cmdBasketAdd(ctx context.Context, args []string) {
+	if len(args) < 1 {
+		fatal("Usage: appie-extra basket-add <product-id> [quantity]")
+	}
+	client := mustAuth(ctx)
+
+	productID, err := strconv.Atoi(args[0])
+	if err != nil {
+		fatal("Invalid product ID: %s", args[0])
+	}
+	qty := 1
+	if len(args) > 1 {
+		qty, _ = strconv.Atoi(args[1])
+		if qty <= 0 {
+			qty = 1
+		}
+	}
+
+	mutation := `mutation UpdateMyListBasket($items: [BasketMutation!]!, $input: BasketInput) { basketItemsUpdate(items: $items, input: $input) { status } }`
+	vars := map[string]any{
+		"input": nil,
+		"items": []map[string]any{
+			{"id": productID, "isStrikethrough": false, "quantity": qty},
+		},
+	}
+
+	var result json.RawMessage
+	if err := client.DoGraphQL(ctx, mutation, vars, &result); err != nil {
+		fatal("Basket add failed: %v", err)
+	}
+
+	printJSON(map[string]any{"ok": true, "action": "added", "productId": productID, "quantity": qty})
+}
+
+func cmdBasketRemove(ctx context.Context, args []string) {
+	if len(args) < 1 {
+		fatal("Usage: appie-extra basket-remove <product-id>")
+	}
+	client := mustAuth(ctx)
+
+	productID, err := strconv.Atoi(args[0])
+	if err != nil {
+		fatal("Invalid product ID: %s", args[0])
+	}
+
+	mutation := `mutation UpdateMyListBasket($items: [BasketMutation!]!, $input: BasketInput) { basketItemsUpdate(items: $items, input: $input) { status } }`
+	vars := map[string]any{
+		"input": nil,
+		"items": []map[string]any{
+			{"id": productID, "isStrikethrough": false, "quantity": 0},
+		},
+	}
+
+	var result json.RawMessage
+	if err := client.DoGraphQL(ctx, mutation, vars, &result); err != nil {
+		fatal("Basket remove failed: %v", err)
+	}
+
+	printJSON(map[string]any{"ok": true, "action": "removed", "productId": productID})
+}
+
 func cmdListToOrder(ctx context.Context, args []string) {
 	client := mustAuth(ctx)
 
@@ -557,6 +634,12 @@ func main() {
 		cmdBrabantia(ctx)
 	case "delivery-slots", "slots":
 		cmdDeliverySlots(ctx)
+	case "basket":
+		cmdBasket(ctx)
+	case "basket-add":
+		cmdBasketAdd(ctx, args)
+	case "basket-remove":
+		cmdBasketRemove(ctx, args)
 	case "--help", "-h", "help":
 		usage()
 	default:
