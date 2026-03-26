@@ -1,0 +1,12 @@
+appie-extra
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+config.json
+taste-profile*
+.env
+.DS_Store
