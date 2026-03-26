@@ -121,8 +121,10 @@ These endpoints were found by inspecting network traffic from the AH app. The AH
 
 ## Credits
 
-- Built on top of [gwillem/appie-go](https://github.com/gwillem/appie-go)
-- Inspired by [markooms/openclaw-skill-albert-heijn](https://github.com/markooms/openclaw-skill-albert-heijn)
+- Built on top of [gwillem/appie-go](https://github.com/gwillem/appie-go) — the Go library that makes this possible
+- Inspired by [markooms/openclaw-skill-albert-heijn](https://github.com/markooms/openclaw-skill-albert-heijn) — the OpenClaw skill that pioneered AI-powered AH grocery planning
+- API research informed by [jabbink's AH API gist](https://gist.github.com/jabbink/8bfa44bdfc535d696b340c46d228fdd1) — comprehensive AH mobile API documentation
+- MITM methodology inspired by [Nick Bouwhuis](https://nick.bouwhuis.net/posts/2022-01-22-automating-any-app/) — "Reverse engineering the Albert Heijn app for fun and profit"
 
 ## License
 
