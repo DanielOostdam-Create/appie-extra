@@ -416,7 +416,7 @@ func cmdBrabantia(ctx context.Context) {
 
 func loadDeliveryAddress() map[string]any {
 	home, _ := os.UserHomeDir()
-	cfgPath := filepath.Join(home, "ah-assistant", "config.json")
+	cfgPath := filepath.Join(home, "grocery-assistant", "ah", "config.json")
 	data, err := os.ReadFile(cfgPath)
 	if err != nil {
 		fatal("Cannot read config.json for delivery address: %v", err)
@@ -434,7 +434,7 @@ func loadDeliveryAddress() map[string]any {
 		fatal("Cannot parse config.json: %v", err)
 	}
 	if cfg.DeliveryAddress == nil {
-		fatal("No delivery_address in ~/ah-assistant/config.json. Add it with: city, country_code, house_number, postal_code, street")
+		fatal("No delivery_address in ~/grocery-assistant/ah/config.json. Add it with: city, country_code, house_number, postal_code, street")
 	}
 	return map[string]any{
 		"city":        cfg.DeliveryAddress.City,
